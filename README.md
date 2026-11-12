@@ -1,12 +1,22 @@
 # razer-jev
 
+![razer jev: ur mouse knows if its a cat](docs/art/cover.png)
+
 Colours a Razer Cobra mouse by what the pointer is resting on, judged by [Jev](https://docs.typesafe.ai).
 
 1. The app screenshots what's under your pointer.
 2. Jev looks at it and picks an answer (cat, dog or neither; right answer, wrong answer or neither).
 3. The app colours the mouse to match.
 
+![1: the app screenshots under the pointer, 2: Jev picks an answer, 3: the mouse goes red](docs/art/how-it-works.png)
+
 No Razer software is involved. The app sends the mouse's USB commands directly, as worked out by [OpenRazer](https://github.com/openrazer/openrazer).
+
+## What it looks like
+
+<img src="docs/art/app-window.png" width="400" alt="The Razer Jev window: colour buttons, a list of modes and + add ur own mode">
+
+![The built-in modes: cat red and dog green, quiz best answer green, picture purple and text yellow](docs/art/modes.png)
 
 ## Build and run
 
@@ -24,6 +34,8 @@ The app reads the key from `TYPESAFE_API_KEY` first, then from that Keychain ite
 macOS asks for two permissions under System Settings > Privacy & Security: **Input Monitoring** (to talk to the mouse) and **Screen & System Audio Recording** (to see the screen). The first build makes a local signing certificate in `signing/`, so macOS keeps those permissions when you rebuild.
 
 ## Add a mode
+
+![A mode JSON file dropped into the modes folder shows up as a new button in the app](docs/art/add-a-mode.png)
 
 A mode is one JSON file. No Swift, no rebuild:
 
