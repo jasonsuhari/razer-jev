@@ -1,0 +1,10 @@
+{
+  "title": "Picture → purple, text → yellow",
+  "look_at": "pointer",
+  "question": "`screen` is part of a computer screen. The mouse pointer is at the centre of the magenta ring. What is the pointer on?",
+  "answers": [
+    { "id": "picture", "means": "A photo, drawing or video.", "light": "purple" },
+    { "id": "text", "means": "Words or numbers.", "light": "#ffc800" },
+    { "id": "other", "means": "Anything else.", "light": "off" }
+  ]
+}

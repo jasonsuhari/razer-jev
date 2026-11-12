@@ -7,7 +7,7 @@ enum Command {
       RazerJev                                    open the window
       RazerJev --set red|green|off
       RazerJev --judge <mode> <screenshot> <x> <y> [--pixels-per-point 2] [--save-marked out.png]
-        modes: \(WatchMode.all.map(\.id).joined(separator: ", ")); x and y are pixels in the screenshot
+        modes: \(ModeLibrary.load().modes.map(\.id).joined(separator: ", ")); x and y are pixels in the screenshot
     """
 
     static func run(_ arguments: [String], light: Light) async -> Int32 {
@@ -24,7 +24,7 @@ enum Command {
             }
             if let modeID = value(after: "--judge"), let path = value(after: "--judge", 2),
                let x = value(after: "--judge", 3).flatMap(Double.init), let y = value(after: "--judge", 4).flatMap(Double.init),
-               let mode = WatchMode.all.first(where: { $0.id == modeID }) {
+               let mode = ModeLibrary.load().modes.first(where: { $0.id == modeID }) {
                 let pixelsPerPoint = value(after: "--pixels-per-point").flatMap(Double.init) ?? 2
                 guard let source = CGImageSourceCreateWithURL(URL(fileURLWithPath: path) as CFURL, nil),
                       let image = CGImageSourceCreateImageAtIndex(source, 0, nil),

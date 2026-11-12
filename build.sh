@@ -8,6 +8,7 @@ swift build -c release
 mkdir -p "$APP/Contents/MacOS"
 cp .build/release/RazerJev "$APP/Contents/MacOS/RazerJev"
 cp Info.plist "$APP/Contents/Info.plist"
+rm -rf "$APP/Contents/Resources/modes" && mkdir -p "$APP/Contents/Resources" && cp -R modes "$APP/Contents/Resources/modes"
 
 [ -f "$KEYCHAIN" ] || signing/make-identity.sh
 security unlock-keychain -p "$(cat signing/keychain-password)" "$KEYCHAIN"

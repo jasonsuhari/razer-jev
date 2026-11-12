@@ -1,0 +1,10 @@
+{
+  "title": "Cat → red, dog → green",
+  "look_at": "pointer",
+  "question": "`screen` is part of a computer screen. The mouse pointer is at the centre of the magenta ring. What is the pointer resting on?",
+  "answers": [
+    { "id": "cat", "means": "A cat or kitten, in a photo, video or drawing.", "light": "red" },
+    { "id": "dog", "means": "A dog or puppy, in a photo, video or drawing.", "light": "green" },
+    { "id": "neither", "means": "Anything that is not a cat or a dog: text, a button, background, empty space, a person, another animal or object.", "light": "off" }
+  ]
+}
