@@ -1,0 +1,6 @@
+.build/
+signing/key.pem
+signing/cert.pem
+signing/keychain-password
+signing/*.keychain-db
+signing/.fl*
