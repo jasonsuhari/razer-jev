@@ -2,58 +2,75 @@ import AppKit
 
 @MainActor
 final class AppWindow: NSObject, NSApplicationDelegate {
+    private static let width: CGFloat = 460
+    private static let modeFills = [Paint.yellow, Paint.cyan, Paint.magenta, Paint.orange]
+
     private let light: Light
-    private let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 340, height: 170),
-                                  styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
-    private let modeMenu = NSPopUpButton(frame: .zero, pullsDown: false)
-    private let status = NSTextField(wrappingLabelWithString: "Pick a colour or a mode.")
-    private lazy var watcher = Watcher(light: light) { [weak self] message in self?.status.stringValue = message }
+    private let canvas = PaintCanvas()
+    private let status = PaintLabel("pick a colour or a mode")
+    private var modeButtons: [PaintButton] = []
+    private lazy var watcher = Watcher(light: light) { [weak self] message in self?.status.text = message }
+    private lazy var window = NSWindow(contentRect: .zero, styleMask: [.titled, .closable, .miniaturizable],
+                                       backing: .buffered, defer: false)
 
     init(light: Light) { self.light = light }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let buttons = RGB.named.enumerated().map { index, preset in
-            let button = NSButton(title: preset.name, target: self, action: #selector(pickColor(_:)))
+        let colorWidth = (Self.width - 40) / CGFloat(RGB.named.count)
+        for (index, preset) in RGB.named.enumerated() {
+            let button = PaintButton(title: preset.name.uppercased(), fill: Paint.color(for: preset.color),
+                                     labelColor: preset.color == .off ? Paint.white : Paint.black,
+                                     tilt: index.isMultiple(of: 2) ? -3 : 2, target: self, action: #selector(pickColor(_:)))
             button.tag = index
-            button.bezelColor = NSColor(red: CGFloat(preset.color.red) / 255, green: CGFloat(preset.color.green) / 255,
-                                        blue: CGFloat(preset.color.blue) / 255, alpha: 1)
-            button.controlSize = .large
-            return button
+            button.frame = CGRect(x: 20 + CGFloat(index) * colorWidth, y: 84, width: colorWidth, height: 64)
+            canvas.addSubview(button)
         }
-        let colorRow = NSStackView(views: buttons)
-        colorRow.distribution = .fillEqually
-        modeMenu.addItems(withTitles: ["Watch: off"] + WatchMode.all.map(\.title))
-        modeMenu.target = self
-        modeMenu.action = #selector(pickMode(_:))
-        status.textColor = .secondaryLabelColor
-        status.preferredMaxLayoutWidth = 292
 
-        let column = NSStackView(views: [colorRow, modeMenu, status])
-        column.orientation = .vertical
-        column.alignment = .leading
-        column.spacing = 14
-        column.edgeInsets = NSEdgeInsets(top: 24, left: 24, bottom: 20, right: 24)
+        canvas.promptAt = CGPoint(x: 28, y: 160)
+        let titles = ["do nothing"] + WatchMode.all.map(\.title)
+        for (index, title) in titles.enumerated() {
+            let button = PaintButton(title: title, fill: Self.modeFills[index % Self.modeFills.count],
+                                     tilt: index.isMultiple(of: 2) ? 1 : -1.5, target: self, action: #selector(pickMode(_:)))
+            button.tag = index
+            button.frame = CGRect(x: 36 + CGFloat(index % 2) * 10, y: 200 + CGFloat(index) * 52, width: Self.width - 80, height: 50)
+            canvas.addSubview(button)
+            modeButtons.append(button)
+        }
+        modeButtons.first?.isChosen = true
+
+        let bubbleTop = 200 + CGFloat(titles.count) * 52 + 20
+        canvas.bubble = CGRect(x: 86, y: bubbleTop, width: Self.width - 106, height: 84)
+        status.frame = canvas.bubble.insetBy(dx: 12, dy: 8)
+        canvas.addSubview(status)
+
+        let height = bubbleTop + 84 + 20
+        canvas.frame = CGRect(x: 0, y: 0, width: Self.width, height: height)
+        window.setContentSize(canvas.frame.size)
         window.title = App.name
-        window.contentView = column
+        window.contentView = canvas
         window.center()
         window.makeKeyAndOrderFront(nil)
     }
 
     @objc private func pickColor(_ sender: NSButton) {
-        watcher.stop(quietly: true)
-        modeMenu.selectItem(at: 0)
+        choose(mode: 0)
         let preset = RGB.named[sender.tag]
         do {
             try light.show(preset.color)
-            status.stringValue = "Mouse is \(preset.name.lowercased())."
+            status.text = "Mouse is \(preset.name.lowercased())."
         } catch {
-            status.stringValue = "\(error)"
+            status.text = "\(error)"
         }
     }
 
-    @objc private func pickMode(_ sender: NSPopUpButton) {
-        let index = sender.indexOfSelectedItem - 1
-        index >= 0 ? watcher.start(WatchMode.all[index]) : watcher.stop()
+    @objc private func pickMode(_ sender: NSButton) {
+        choose(mode: sender.tag)
+        sender.tag == 0 ? watcher.stop() : watcher.start(WatchMode.all[sender.tag - 1])
+    }
+
+    private func choose(mode index: Int) {
+        if index == 0 { watcher.stop(quietly: true) }
+        for button in modeButtons { button.isChosen = button.tag == index }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
